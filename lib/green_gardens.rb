@@ -1,6 +1,7 @@
 require_relative 'font'
 require 'date'
 require 'byebug'
+
 class LushGreenGardens
 
   WHITE = 0
@@ -11,7 +12,7 @@ class LushGreenGardens
 
   attr_accessor :word, :current_letter, :latest_run, :current_day
 
-  def initialize(word="&REWEL")
+  def initialize(word="REWEL")
     @original_word = word
     @word = word
     @current_letter= ""
@@ -95,6 +96,7 @@ class LushGreenGardens
       debugger
       @latest_run = Date.new(date[0].to_i, date[1].to_i, date[2].to_i)
     end
+
     current_letter.instance_of?(Array) ? @current_letter = current_letter : @current_letter = next_letter()
     current_word.instance_of?(String) ? @word = current_word : nil # @word = current_word #@word = get_word() --- need to find a way to maintain after word is finished
   end
@@ -172,9 +174,9 @@ class LushGreenGardens
       @num += 60
       file_writer()
       message = 'Add text to file'
-      # system("git add .")
-      # system("git commit -m \"#{message}\"")
-      # system("git push origin master")
+      system("git add .")
+      system("git commit -m \"#{message}\"")
+      system("git push origin master")
     end
   end
 end
