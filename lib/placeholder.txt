@@ -1,0 +1,1 @@
+{"original_word":"nil", "word":"nil", "current_letter":"nil", "latest_run":"nil","current_day":"nil","current_index":"-1"}

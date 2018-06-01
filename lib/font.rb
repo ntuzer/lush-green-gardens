@@ -182,5 +182,5 @@ FONT_LETTERS = {
   :P => P, :Q => Q, :R => R,
   :S => S, :T => T, :U => U,
   :V => V, :W => W, :X => X,
-  :Y => Y, :Z => Z,
+  :Y => Y, :Z => Z, :PUERTO_RICO_FLAG => PUERTO_RICO_FLAG
 }

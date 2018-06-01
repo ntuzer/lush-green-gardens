@@ -1,5 +1,6 @@
 require_relative 'font'
 require 'date'
+require 'json'
 require 'byebug'
 
 class LushGreenGardens
@@ -12,7 +13,7 @@ class LushGreenGardens
 
   attr_accessor :word, :current_letter, :latest_run, :current_day
 
-  def initialize(word="REWEL")
+  def initialize(word="&REWEL")
     @original_word = word
     @word = word
     @current_letter= ""
@@ -26,7 +27,7 @@ class LushGreenGardens
   end
 
   def scheduler()
-    #once a day call water_my_garden
+    # once a day call water_my_garden
     # while true
       @num = 0
       grow_baby_grow()
@@ -40,7 +41,6 @@ class LushGreenGardens
     if remove_missed_days < 7
       make_up_time(remove_missed_days)
     else
-      # restart word
       restart()
       water_my_garden(FERTILIZER)
       return
@@ -77,35 +77,53 @@ class LushGreenGardens
   end
 
   def green_square(color = nil)
-    # num_of_commits returns a random number and updates the current letter
     color = update_current_letter() if color.nil?
     num = num_of_commits(color)
     make_commits(num)
   end
 
   def load_data()
-    current_word = File.readlines('lib/current_word.txt')[0]
-    current_letter = File.readlines('lib/current_letter.txt')[0]
-    current_index = File.readlines('lib/current_index.txt')[0]
-    latest_run = File.readlines('lib/last_run_day.txt')[0]
-    @current_index = current_index.to_i
+
+    payload = File.readlines("lib/data.txt")[0]
+    payload = JSON.parse(payload)
+
+    payload["original_word"] == "nil" ? original_word = nil : @original_word = payload["original_word"]
+    payload["word"] == "nil" ? current_word = nil : current_word = payload["word"]
+    payload["current_letter"] == "nil" ? current_letter = nil : current_letter = payload["current_letter"]
+    payload["latest_run"] == "nil" ? latest_run = nil : latest_run = payload["latest_run"]
+    @current_index = payload["current_index"].to_i
+
+    validate_latest_run(latest_run)
+    validate_current_letter(current_letter)
+
+    # current_word.instance_of?(String) ? @word = current_word : nil
+  end
+
+  def validate_latest_run(latest_run)
     if latest_run.nil?
       @latest_run = latest_run
     else
       date = latest_run.split("-")
-      debugger
       @latest_run = Date.new(date[0].to_i, date[1].to_i, date[2].to_i)
     end
-
-    current_letter.instance_of?(Array) ? @current_letter = current_letter : @current_letter = next_letter()
-    current_word.instance_of?(String) ? @word = current_word : nil # @word = current_word #@word = get_word() --- need to find a way to maintain after word is finished
   end
 
-  def next_letter() #private
+  def validate_current_letter(current_letter)
+    current_letter.nil? ? @current_letter = next_letter() : @current_letter = current_letter
+  end
+
+  def next_letter()
     #get the next letter to be written
     letter = @word[0]
     @word = @word.slice(1..-1)
-    @current_letter = FONT_LETTERS[letter.capitalize.to_sym].dup
+    if are_you_puerto_rican?(letter)
+      return FONT_LETTERS[:PUERTO_RICO_FLAG].dup
+    end
+    FONT_LETTERS[letter.capitalize.to_sym].dup
+  end
+
+  def are_you_puerto_rican?(letter)
+    letter == "&"
   end
 
   def update_current_letter
@@ -130,39 +148,32 @@ class LushGreenGardens
   end
 
   def save_context()
-    original_word = File.open('lib/original_word.txt','w')
-    original_word.write(@original_word)
-    original_word.close
 
-    current_letter = File.open('lib/current_letter.txt','w')
-    current_letter.write(@current_letter)
-    current_letter.close
+    context = {
+      original_word: @original_word,
+      word: @word,
+      current_letter: @current_letter,
+      latest_run: @latest_run,
+      current_index: @current_index
+    }
 
-    current_word = File.open('lib/current_word.txt','w')
-    current_word.write(@word)
-    current_word.close
-
-    current_index = File.open('lib/current_index.txt','w')
-    current_index.write(@current_index)
-    current_index.close
-
-    last_run = File.open('lib/last_run_day.txt','w')
-    last_run.write(Date.today)
-    last_run.close
+    log = File.open('lib/data.txt','w')
+    log.write(JSON.generate(context))
+    log.close
   end
 
-  def load_text() #private to file_writer
+  def load_text()
     lorem = File.readlines('lib/lorem.txt')
     words = lorem[0].chomp.split(" ") #length = 579
   end
 
-  def output_words(new_word) #private to file_writer
+  def output_words(new_word)
     output = File.open("lib/output.txt", "a")
     output.write(new_word)
     output.close
   end
 
-  def file_writer() #private to make_commits
+  def file_writer()
     words = load_text()
     @current_index = (@current_index + 1) % 579
     new_word = words[@current_index] + " "
@@ -174,9 +185,29 @@ class LushGreenGardens
       @num += 60
       file_writer()
       message = 'Add text to file'
-      system("git add .")
-      system("git commit -m \"#{message}\"")
-      system("git push origin master")
+      # system("git add .")
+      # system("git commit -m \"#{message}\"")
+      # system("git push origin master")
+
+      commits_were_made(num)
     end
   end
+
+  def commits_were_made(commits) #save to log
+    data = {
+      date: Date.today,
+      num_of_commits: commits,
+      current_letter: @current_letter,
+      word: @word,
+      latest_run: @latest_run,
+    }
+
+    stats = File.open('lib/log.txt','w')
+    stats.write(JSON.generate(data))
+    stats.close
+  end
+
 end
+
+
+LushGreenGardens.new()
