@@ -28,11 +28,14 @@ class LushGreenGardens
 
   def scheduler()
     # once a day call water_my_garden
-    # while true
+    while true
+      print "Current Day: #{@current_day}"
+      print "Last run: #{@latest_run}"
       @num = 0
       grow_baby_grow()
-      # sleep(86400 - @num)
-    # end
+      print "----------------------------------------------------------"
+      sleep(86400 - @num)
+    end
   end
 
   def grow_baby_grow()
@@ -50,16 +53,11 @@ class LushGreenGardens
 
   def initial_run?()
     if @latest_run.nil?
-      @current_day.monday? ? water_my_garden() : water_my_garden(FERTILIZER)
+      # @current_day.monday? ? water_my_garden() : water_my_garden(FERTILIZER)
+      true ? water_my_garden() : water_my_garden(FERTILIZER)
       return true
     end
     false
-  end
-
-  def restart()
-    @word = @original_word
-    @current_letter= nil
-    @latest_run = nil
   end
 
   def water_my_garden(fertilizer=false)
@@ -72,14 +70,49 @@ class LushGreenGardens
     end
   end
 
-  def make_up_time(days)
-    days.times { update_current_letter() }
-  end
-
   def green_square(color = nil)
     color = update_current_letter() if color.nil?
     num = num_of_commits(color)
     make_commits(num)
+  end
+
+  def num_of_commits(color)
+    #return num of commits to make for the day
+    case color
+    when 0
+      low, high = 0, 0
+    when 1
+      low, high = 1, 3
+    when 2
+      low, high = 5, 10
+    when 3
+      low, high = 15, 20
+    end
+    rand(low..high)
+  end
+
+  def make_commits(num)
+    num.times do
+      @num += 60
+      file_writer()
+      message = 'Add text to file'
+      system("git add .")
+      system("git commit -m \"#{message}\"")
+      system("git push origin master")
+    end
+    clear_output_file()
+    commits_were_made(num)
+  end
+
+  def next_letter()
+    #get the next letter to be written
+    puts "NEXT LETTER"
+    letter = @word[0]
+    @word = @word.slice(1..-1)
+    if are_you_puerto_rican?(letter)
+      return FONT_LETTERS[:PUERTO_RICO_FLAG].dup
+    end
+    FONT_LETTERS[letter.capitalize.to_sym].dup
   end
 
   def load_data()
@@ -112,14 +145,8 @@ class LushGreenGardens
     current_letter.nil? ? @current_letter = next_letter() : @current_letter = current_letter
   end
 
-  def next_letter()
-    #get the next letter to be written
-    letter = @word[0]
-    @word = @word.slice(1..-1)
-    if are_you_puerto_rican?(letter)
-      return FONT_LETTERS[:PUERTO_RICO_FLAG].dup
-    end
-    FONT_LETTERS[letter.capitalize.to_sym].dup
+  def make_up_time(days)
+    days.times { update_current_letter() }
   end
 
   def are_you_puerto_rican?(letter)
@@ -127,24 +154,8 @@ class LushGreenGardens
   end
 
   def update_current_letter
-    next_letter() if @current_letter.empty?
+    @current_letter = next_letter() if @current_letter.empty?
     @current_letter.shift
-  end
-
-  def num_of_commits(color)
-    #return num of commits to make for the day
-    case color
-    when 0
-      low, high = 0, 0
-    when 1
-      low, high = 1, 3
-    when 2
-      low, high = 5, 10
-    when 3
-      low, high = 15, 20
-    end
-
-    rand(low..high)
   end
 
   def save_context()
@@ -173,6 +184,12 @@ class LushGreenGardens
     output.close
   end
 
+  def clear_output_file()
+    output = File.open("lib/output.txt", "w")
+    output.write("")
+    output.close
+  end
+
   def file_writer()
     words = load_text()
     @current_index = (@current_index + 1) % 579
@@ -180,17 +197,10 @@ class LushGreenGardens
     output_words(new_word)
   end
 
-  def make_commits(num)
-    num.times do
-      @num += 60
-      file_writer()
-      message = 'Add text to file'
-      # system("git add .")
-      # system("git commit -m \"#{message}\"")
-      # system("git push origin master")
-
-      commits_were_made(num)
-    end
+  def restart()
+    @word = @original_word
+    @current_letter= nil
+    @latest_run = nil
   end
 
   def commits_were_made(commits) #save to log
@@ -202,8 +212,8 @@ class LushGreenGardens
       latest_run: @latest_run,
     }
 
-    stats = File.open('lib/log.txt','w')
-    stats.write(JSON.generate(data))
+    stats = File.open('lib/log.txt','a')
+    stats.puts(JSON.generate(data))
     stats.close
   end
 
