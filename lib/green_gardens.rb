@@ -84,7 +84,7 @@ class LushGreenGardens
     when 1
       low, high = 1, 3
     when 2
-      low, high = 5, 10
+      low, high = 5, 8
     when 3
       low, high = 15, 20
     end
