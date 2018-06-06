@@ -28,14 +28,35 @@ class LushGreenGardens
 
   def scheduler()
     # once a day call water_my_garden
+    system("echo 'Lets get this garden growing!'")
+    print_status()
+    system("echo '----------------------------------------------------------'")
+
     while true
-      print "Current Day: #{@current_day}"
-      print "Last run: #{@latest_run}"
-      @num = 0
-      grow_baby_grow()
-      print "----------------------------------------------------------"
-      sleep(86400 - @num)
+      if itsa_new_day?()
+        print_status()
+
+        grow_baby_grow()
+
+        print_status()
+      end
+      system("echo 'Sleeping, check back in an hour.'")
+      system("echo '----------------------------------------------------------'")
+      sleep(3600)
     end
+
+  end
+
+  def print_status
+    system("echo 'Current day: #{@current_day}'")
+    system("echo 'Latest run: #{@latest_run}'")
+  end
+
+  def itsa_new_day?
+    return true if @latest_run != @current_day
+    result = @current_day.next == Date.today
+    @current_day = @current_day.next if result
+    result
   end
 
   def grow_baby_grow()
@@ -66,7 +87,7 @@ class LushGreenGardens
     else
       green_square()
       @latest_run = @current_day
-      save_context()
+      save_data()
     end
   end
 
@@ -158,8 +179,7 @@ class LushGreenGardens
     @current_letter.shift
   end
 
-  def save_context()
-
+  def save_data()
     context = {
       original_word: @original_word,
       word: @word,
