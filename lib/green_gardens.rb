@@ -113,6 +113,7 @@ class LushGreenGardens
   end
 
   def make_commits(num)
+    system("echo '----------------------------------------------------------'")
     num.times do
       @num += 60
       file_writer()
