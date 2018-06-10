@@ -1,1 +1,1 @@
-{"original_word":"&REWEL","word":"&REWEL","current_letter":[3,0,2,1,3,0,3,1,0,2,1,0,3,0,1,0,2,1,0,1,0,1,0,2,1,0,1,0,1,0,2,1,0,1,0,1,0],"latest_run":"2018-06-07","current_index":252}
+{"original_word":"&REWEL","word":"&REWEL","current_letter":[2,1,3,0,3,1,0,2,1,0,3,0,1,0,2,1,0,1,0,1,0,2,1,0,1,0,1,0,2,1,0,1,0,1,0],"latest_run":"2018-06-09","current_index":267}
